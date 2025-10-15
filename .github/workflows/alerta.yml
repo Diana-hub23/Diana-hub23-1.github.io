@@ -23,15 +23,18 @@ jobs:
 
       - name: Send notification to ntfy.sh
         run: |
-          # Construi un mensaje simple con detalles del push
-          MESSAGE="Repositorio: $GITHUB_REPOSITORY
-Rama: $GITHUB_REF_NAME
-Autor: $GITHUB_ACTOR
-Evento: push a main
-Workflow: $GITHUB_WORKFLOW
-Commit: $GITHUB_SHA"
+          # Cree un archivo temporal con el mensaje para evitar problemas con comillas/newlines
+          cat <<'MSG' >/tmp/ntfymsg.txt
+          Repositorio: $GITHUB_REPOSITORY
+          Rama: ${GITHUB_REF_NAME#refs/heads/}
+          Autor: $GITHUB_ACTOR
+          Evento: push a main
+          Workflow: $GITHUB_WORKFLOW
+          Commit: $GITHUB_SHA
+          MSG
 
+          # Enviare el contenido del archivo a ntfy
           curl -sS -H "Title: Notificación - Push a main" \
                    -H "X-Repository: $GITHUB_REPOSITORY" \
-                   -d "$MESSAGE" \
-                   https://ntfy.sh/devops-itla || true
+                   --data-binary @/tmp/ntfymsg.txt \
+                   https://ntfy.sh/devops-itla
