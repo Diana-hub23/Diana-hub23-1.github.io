@@ -1,0 +1,37 @@
+name: Push -> ntfy notification
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Run Hola Mundo
+        run: node hello.js
+
+      - name: Send notification to ntfy.sh
+        run: |
+          # Construi un mensaje simple con detalles del push
+          MESSAGE="Repositorio: $GITHUB_REPOSITORY
+Rama: $GITHUB_REF_NAME
+Autor: $GITHUB_ACTOR
+Evento: push a main
+Workflow: $GITHUB_WORKFLOW
+Commit: $GITHUB_SHA"
+
+          curl -sS -H "Title: Notificación - Push a main" \
+                   -H "X-Repository: $GITHUB_REPOSITORY" \
+                   -d "$MESSAGE" \
+                   https://ntfy.sh/devops-itla || true
